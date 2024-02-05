@@ -42,7 +42,7 @@ rl.on('line', (data) => {
     }
 
     if (data.startsWith('cat')) {
-      read(data.split(' ')[1]);
+      readFile(data.split(' ')[1]);
     }
   }
 
@@ -81,7 +81,7 @@ const returnDirectory = (path) => {
   }
 };
 
-const read = async (path) => {
+const readFile = (path) => {
   const readStream = createReadStream(path);
 
   readStream.on('data', (data) => {
