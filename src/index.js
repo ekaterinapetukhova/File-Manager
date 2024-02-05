@@ -1,8 +1,8 @@
 import { stdout, stdin, argv } from 'process';
-import { createReadStream, readdir } from 'fs';
+import { readdir } from 'fs';
 import { createInterface } from 'readline';
 import { homedir } from 'os';
-import { join, dirname, extname } from 'path';
+import { join, dirname, parse } from 'path';
 import { DirectoryItem } from './directory-item.js';
 
 const username =
@@ -10,17 +10,17 @@ const username =
     .filter((item) => item.startsWith('--'))
     .join('')
     .split('=')[1] || 'Username';
-const homePath = dirname(homedir());
+const homePath = join(dirname(homedir()), username);
+let currentDirectory = homePath;
 
 const rl = createInterface({
   output: stdout,
   input: stdin,
+  prompt: '>',
 });
 
-const readStream = createReadStream(homePath);
-let currentDirectory = join(homePath, username);
-
-stdout.write(`Welcome to the File Manager, ${username}!\n`);
+stdout.write(`Welcome to the File Manager, ${username}!\n\n`);
+stdout.write(`You are currently in ${currentDirectory}\n\n`);
 
 const closeConsole = () => {
   stdout.write(`Thank you for using File Manager, ${username}, goodbye!`);
@@ -28,19 +28,30 @@ const closeConsole = () => {
 };
 
 rl.on('line', (data) => {
-  if (data.toString() === '.exit') {
+  data = data.toString();
+
+  if (data === '.exit') {
     closeConsole();
   } else {
-    switch (data.toString()) {
-      case 'ls':
-        readDirectory(currentDirectory);
-        break;
-      default:
-        console.log('lol');
+    if (data === 'ls') {
+      readDirectory(currentDirectory);
     }
-    stdout.write(`You are currently in ${currentDirectory}\n`);
+
+    if (data === 'up') {
+      returnDirectory(currentDirectory);
+    }
   }
+
+  if (data.startsWith('cd')) {
+    openDirectory(data.slice(3));
+  }
+
+  stdout.write(`You are currently in ${currentDirectory}\n\n`);
 });
+
+const openDirectory = (path) => {
+  currentDirectory = join(path);
+};
 
 const readDirectory = (path) => {
   const directoryItems = [];
@@ -55,6 +66,10 @@ const readDirectory = (path) => {
 
     console.table(directoryItems);
   });
+};
+
+const returnDirectory = (path) => {
+  currentDirectory = path === parse(homePath).root ? path : dirname(path);
 };
 
 rl.on('SIGINT', closeConsole);
