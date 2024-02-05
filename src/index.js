@@ -42,7 +42,7 @@ rl.on('line', (data) => {
     }
 
     if (data.startsWith('cat')) {
-      readFile(data.split(' ')[1]);
+      read(data.split(' ')[1]);
     }
   }
 
@@ -81,14 +81,12 @@ const returnDirectory = (path) => {
   }
 };
 
-const readFile = (path) => {
-  currentDirectory = path;
+const read = async (path) => {
+  const readStream = createReadStream(path);
 
-  console.log(currentDirectory);
-
-  const readStream = createReadStream(currentDirectory);
-
-  readStream.on('data', (data) => stdout.write(data.toString));
+  readStream.on('data', (data) => {
+    stdout.write(`${data.toString()}\n`)
+  })
 }
 
 rl.on('SIGINT', closeConsole);
