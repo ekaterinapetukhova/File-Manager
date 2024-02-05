@@ -1,5 +1,5 @@
 import { stdout, stdin, argv } from 'process';
-import { readdir, createReadStream, open, rename, copyFile } from 'fs';
+import { readdir, createReadStream, open, rename, createWriteStream } from 'fs';
 import { createInterface } from 'readline';
 import { homedir } from 'os';
 import { join, dirname, parse } from 'path';
@@ -82,9 +82,10 @@ const renameFile = async (path, name) => {
 };
 
 const copy = async (path, copyPath) => {
-  copyFile(path, copyPath, (err) => {
-    if (err) throw new Error(err);
-  })
+  const readStream = createReadStream(path);
+  const writeStream = createWriteStream(copyPath);
+
+  readStream.pipe(writeStream);
 }
 
 rl.on('line', (data) => {
