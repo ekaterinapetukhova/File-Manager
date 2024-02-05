@@ -1,5 +1,5 @@
 import { stdout, stdin, argv } from 'process';
-import { readdir, createReadStream, open } from 'fs';
+import { readdir, createReadStream, open, rename } from 'fs';
 import { createInterface } from 'readline';
 import { homedir } from 'os';
 import { join, dirname, parse } from 'path';
@@ -54,6 +54,10 @@ rl.on('line', (data) => {
     createFile(data.split(' ')[1]);
   }
 
+  if (data.startsWith('rn')) {
+    renameFile(data.split(' ')[1], data.split(' ')[2]);
+  }
+
   stdout.write(`You are currently in ${currentDirectory}\n\n`);
 });
 
@@ -85,7 +89,7 @@ const returnDirectory = (path) => {
   }
 };
 
-const readFile = (path) => {
+const readFile = async (path) => {
   const readStream = createReadStream(path);
 
   readStream.on('data', (data) => {
@@ -93,14 +97,21 @@ const readFile = (path) => {
   });
 };
 
-const createFile = (path) => {
-  const filePath = join(currentDirectory, path)
+const createFile = async (name) => {
+  const filePath = join(currentDirectory, name);
 
   console.log(filePath);
-  
+
   open(filePath, 'w', (err) => {
     if (err) console.log(err);
-  })
-}
+  });
+};
+
+const renameFile = async (path, name) => {
+  const newPath = join(dirname(path), name);
+  rename(path, newPath, (err) => {
+    if (err) console.log(err);
+  });
+};
 
 rl.on('SIGINT', closeConsole);
