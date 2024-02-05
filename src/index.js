@@ -1,7 +1,7 @@
 import { stdout, stdin, argv } from 'process';
 import { readdir, createReadStream, open, rename, createWriteStream, rm } from 'fs';
 import { createInterface } from 'readline';
-import { homedir } from 'os';
+import { homedir, EOL } from 'os';
 import { join, dirname, parse } from 'path';
 import { DirectoryItem } from './directory-item.js';
 import { createHash } from 'crypto';
@@ -113,10 +113,10 @@ const calculateHash = (path) => {
   const hash = createHash('sha256');
   const readStream = createReadStream(path);
 
- readStream.on('data', (data) => {
-  stdout.write(`${hash.update(data.toString()).digest('hex')}\n`);
- })
-}
+  readStream.on('data', (data) => {
+    stdout.write(`${hash.update(data.toString()).digest('hex')}\n`);
+  });
+};
 
 rl.on('line', (data) => {
   data = data.toString();
@@ -163,6 +163,17 @@ rl.on('line', (data) => {
 
   if (data.startsWith('hash')) {
     calculateHash(data.split(' ')[1]);
+  }
+
+  if (data.startsWith('os')) {
+    switch (data.split(' ')[1]) {
+      case '--EOL':
+        stdout.write(`${JSON.stringify(EOL)}\n`);
+        break;
+      case '--homedir':
+        stdout.write(`${homePath}\n`);
+        break;
+    }
   }
 
   stdout.write(`You are currently in ${currentDirectory}\n\n`);
