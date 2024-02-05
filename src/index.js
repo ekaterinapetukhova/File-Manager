@@ -1,5 +1,5 @@
 import { stdout, stdin, argv } from 'process';
-import { readdir, createReadStream } from 'fs';
+import { readdir, createReadStream, open } from 'fs';
 import { createInterface } from 'readline';
 import { homedir } from 'os';
 import { join, dirname, parse } from 'path';
@@ -32,22 +32,26 @@ rl.on('line', (data) => {
 
   if (data === '.exit') {
     closeConsole();
-  } else {
-    if (data === 'ls') {
-      readDirectory(currentDirectory);
-    }
+  }
 
-    if (data === 'up') {
-      returnDirectory(currentDirectory);
-    }
+  if (data === 'ls') {
+    readDirectory(currentDirectory);
+  }
 
-    if (data.startsWith('cat')) {
-      readFile(data.split(' ')[1]);
-    }
+  if (data === 'up') {
+    returnDirectory(currentDirectory);
+  }
+
+  if (data.startsWith('cat')) {
+    readFile(data.split(' ')[1]);
   }
 
   if (data.startsWith('cd')) {
     openDirectory(data.split(' ')[1]);
+  }
+
+  if (data.startsWith('add')) {
+    createFile(data.split(' ')[1]);
   }
 
   stdout.write(`You are currently in ${currentDirectory}\n\n`);
@@ -85,7 +89,17 @@ const readFile = (path) => {
   const readStream = createReadStream(path);
 
   readStream.on('data', (data) => {
-    stdout.write(`${data.toString()}\n`)
+    stdout.write(`${data.toString()}\n`);
+  });
+};
+
+const createFile = (path) => {
+  const filePath = join(currentDirectory, path)
+
+  console.log(filePath);
+  
+  open(filePath, 'w', (err) => {
+    if (err) console.log(err);
   })
 }
 
