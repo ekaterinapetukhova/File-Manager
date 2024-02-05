@@ -1,9 +1,10 @@
 import { stdout, stdin, argv } from 'process';
-import { readdir, createReadStream, open, rename } from 'fs';
+import { readdir, createReadStream, open, rename, copyFile } from 'fs';
 import { createInterface } from 'readline';
 import { homedir } from 'os';
 import { join, dirname, parse } from 'path';
 import { DirectoryItem } from './directory-item.js';
+import { dir } from 'console';
 
 const username =
   argv
@@ -26,40 +27,6 @@ const closeConsole = () => {
   stdout.write(`Thank you for using File Manager, ${username}, goodbye!`);
   rl.close();
 };
-
-rl.on('line', (data) => {
-  data = data.toString();
-
-  if (data === '.exit') {
-    closeConsole();
-  }
-
-  if (data === 'ls') {
-    readDirectory(currentDirectory);
-  }
-
-  if (data === 'up') {
-    returnDirectory(currentDirectory);
-  }
-
-  if (data.startsWith('cat')) {
-    readFile(data.split(' ')[1]);
-  }
-
-  if (data.startsWith('cd')) {
-    openDirectory(data.split(' ')[1]);
-  }
-
-  if (data.startsWith('add')) {
-    createFile(data.split(' ')[1]);
-  }
-
-  if (data.startsWith('rn')) {
-    renameFile(data.split(' ')[1], data.split(' ')[2]);
-  }
-
-  stdout.write(`You are currently in ${currentDirectory}\n\n`);
-});
 
 const openDirectory = (path) => {
   currentDirectory = join(path);
@@ -113,5 +80,49 @@ const renameFile = async (path, name) => {
     if (err) console.log(err);
   });
 };
+
+const copy = async (path, copyPath) => {
+  copyFile(path, copyPath, (err) => {
+    if (err) throw new Error(err);
+  })
+}
+
+rl.on('line', (data) => {
+  data = data.toString();
+
+  if (data === '.exit') {
+    closeConsole();
+  }
+
+  if (data === 'ls') {
+    readDirectory(currentDirectory);
+  }
+
+  if (data === 'up') {
+    returnDirectory(currentDirectory);
+  }
+
+  if (data.startsWith('cat')) {
+    readFile(data.split(' ')[1]);
+  }
+
+  if (data.startsWith('cd')) {
+    openDirectory(data.split(' ')[1]);
+  }
+
+  if (data.startsWith('add')) {
+    createFile(data.split(' ')[1]);
+  }
+
+  if (data.startsWith('rn')) {
+    renameFile(data.split(' ')[1], data.split(' ')[2]);
+  }
+
+  if (data.startsWith('cp')) {
+    copy(data.split(' ')[1], data.split(' ')[2]);
+  }
+
+  stdout.write(`You are currently in ${currentDirectory}\n\n`);
+});
 
 rl.on('SIGINT', closeConsole);
