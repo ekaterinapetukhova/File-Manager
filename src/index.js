@@ -1,7 +1,7 @@
 import { stdout, stdin, argv } from 'process';
 import { readdir, createReadStream, open, rename, createWriteStream, rm } from 'fs';
 import { createInterface } from 'readline';
-import { homedir, EOL, userInfo } from 'os';
+import { homedir, EOL, userInfo, arch } from 'os';
 import { join, dirname, parse } from 'path';
 import { DirectoryItem } from './directory-item.js';
 import { createHash } from 'crypto';
@@ -175,6 +175,10 @@ rl.on('line', (data) => {
         break;
       case '--username':
         stdout.write(`${userInfo().username}\n`);
+        break;
+      case '--architecture':
+        stdout.write(`${arch()}\n`);
+        break;
     }
   }
 
