@@ -4,6 +4,7 @@ import { createInterface } from 'readline';
 import { homedir } from 'os';
 import { join, dirname, parse } from 'path';
 import { DirectoryItem } from './directory-item.js';
+import { createHash } from 'crypto';
 
 const username =
   argv
@@ -108,6 +109,15 @@ const moveFile = async (path, newPath) => {
   deleteFile(path);
 };
 
+const calculateHash = (path) => {
+  const hash = createHash('sha256');
+  const readStream = createReadStream(path);
+
+ readStream.on('data', (data) => {
+  stdout.write(`${hash.update(data.toString()).digest('hex')}\n`);
+ })
+}
+
 rl.on('line', (data) => {
   data = data.toString();
 
@@ -149,6 +159,10 @@ rl.on('line', (data) => {
 
   if (data.startsWith('mv')) {
     moveFile(data.split(' ')[1], data.split(' ')[2]);
+  }
+
+  if (data.startsWith('hash')) {
+    calculateHash(data.split(' ')[1]);
   }
 
   stdout.write(`You are currently in ${currentDirectory}\n\n`);
