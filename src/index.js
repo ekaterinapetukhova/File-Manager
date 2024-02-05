@@ -1,10 +1,9 @@
 import { stdout, stdin, argv } from 'process';
-import { readdir, createReadStream, open, rename, createWriteStream } from 'fs';
+import { readdir, createReadStream, open, rename, createWriteStream, rm } from 'fs';
 import { createInterface } from 'readline';
 import { homedir } from 'os';
 import { join, dirname, parse } from 'path';
 import { DirectoryItem } from './directory-item.js';
-import { dir } from 'console';
 
 const username =
   argv
@@ -36,7 +35,7 @@ const readDirectory = (path) => {
   const directoryItems = [];
 
   readdir(path, { withFileTypes: true }, (err, files) => {
-    if (err) throw new Error('Error!');
+    if (err) throw new Error('Operation failed');
 
     files.forEach((file) => {
       const item = new DirectoryItem(file.name, file.isFile() ? 'file' : 'directory');
@@ -50,43 +49,60 @@ const readDirectory = (path) => {
 const returnDirectory = (path) => {
   if (path === parse(homePath).root) {
     currentDirectory = path;
-    stdout.write('Operation failed\n');
+    console.log('Operation failed');
   } else {
     currentDirectory = dirname(path);
   }
 };
 
 const readFile = async (path) => {
-  const readStream = createReadStream(path);
+  try {
+    const readStream = createReadStream(path);
 
-  readStream.on('data', (data) => {
-    stdout.write(`${data.toString()}\n`);
-  });
+    readStream.on('data', (data) => {
+      stdout.write(`${data.toString()}\n`);
+    });
+  } catch (err) {
+    console.log('Operation failed');
+  }
 };
 
 const createFile = async (name) => {
   const filePath = join(currentDirectory, name);
 
-  console.log(filePath);
-
   open(filePath, 'w', (err) => {
-    if (err) console.log(err);
+    if (err) console.log('Operation failed');
   });
 };
 
 const renameFile = async (path, name) => {
   const newPath = join(dirname(path), name);
   rename(path, newPath, (err) => {
-    if (err) console.log(err);
+    if (err) console.log('Operation failed');
   });
 };
 
-const copy = async (path, copyPath) => {
+const copyFile = async (path, copyPath) => {
+  try {
+    const readStream = createReadStream(path);
+    const writeStream = createWriteStream(copyPath);
+
+    readStream.pipe(writeStream);
+  } catch (err) {
+    console.log('Operation failed');
+  }
+};
+
+const moveFile = async (path, newPath) => {
   const readStream = createReadStream(path);
-  const writeStream = createWriteStream(copyPath);
+  const writeStream = createWriteStream(newPath);
 
   readStream.pipe(writeStream);
-}
+
+  rm(path, (err) => {
+    if (err) console.log('Operation failed');
+  });
+};
 
 rl.on('line', (data) => {
   data = data.toString();
@@ -120,7 +136,11 @@ rl.on('line', (data) => {
   }
 
   if (data.startsWith('cp')) {
-    copy(data.split(' ')[1], data.split(' ')[2]);
+    copyFile(data.split(' ')[1], data.split(' ')[2]);
+  }
+
+  if (data.startsWith('mv')) {
+    moveFile(data.split(' ')[1], data.split(' ')[2]);
   }
 
   stdout.write(`You are currently in ${currentDirectory}\n\n`);
