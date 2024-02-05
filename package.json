@@ -1,0 +1,22 @@
+{
+  "name": "file-manager",
+  "version": "1.0.0",
+  "description": "File-manager task https://github.com/AlreadyBored/nodejs-assignments/blob/main/assignments/file-manager/assignment.md",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ekaterinapetukhova/File-Manager.git"
+  },
+  "keywords": [
+    "nodejs", 
+    "ekaterinapetukhova"
+  ],
+  "author": "ekaterinapetukhova",
+  "license": "ISC"
+}
