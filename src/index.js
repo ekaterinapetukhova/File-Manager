@@ -93,15 +93,19 @@ const copyFile = async (path, copyPath) => {
   }
 };
 
+const deleteFile = async (path) => {
+  rm(path, (err) => {
+    if (err) console.log('Operation failed');
+  });
+};
+
 const moveFile = async (path, newPath) => {
   const readStream = createReadStream(path);
   const writeStream = createWriteStream(newPath);
 
   readStream.pipe(writeStream);
 
-  rm(path, (err) => {
-    if (err) console.log('Operation failed');
-  });
+  deleteFile(path);
 };
 
 rl.on('line', (data) => {
@@ -137,6 +141,10 @@ rl.on('line', (data) => {
 
   if (data.startsWith('cp')) {
     copyFile(data.split(' ')[1], data.split(' ')[2]);
+  }
+
+  if (data.startsWith('rm')) {
+    deleteFile(data.split(' ')[1]);
   }
 
   if (data.startsWith('mv')) {
