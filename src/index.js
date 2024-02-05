@@ -1,7 +1,7 @@
 import { stdout, stdin, argv } from 'process';
 import { readdir, createReadStream, open, rename, createWriteStream, rm } from 'fs';
 import { createInterface } from 'readline';
-import { homedir, EOL, userInfo, arch } from 'os';
+import { homedir, EOL, userInfo, arch, cpus } from 'os';
 import { join, dirname, parse } from 'path';
 import { DirectoryItem } from './directory-item.js';
 import { createHash } from 'crypto';
@@ -118,6 +118,16 @@ const calculateHash = (path) => {
   });
 };
 
+const showCpus = () => {
+  const cpuArr = [];
+
+  cpus().forEach((cpu) => {
+    cpuArr.push({ name: cpu.model, speed: cpu.speed })
+  })
+
+console.table(cpuArr);
+}
+
 rl.on('line', (data) => {
   data = data.toString();
 
@@ -178,6 +188,9 @@ rl.on('line', (data) => {
         break;
       case '--architecture':
         stdout.write(`${arch()}\n`);
+        break;
+      case '--cpus':
+        showCpus();
         break;
     }
   }
