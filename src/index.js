@@ -1,5 +1,5 @@
 import { stdout, stdin, argv } from 'process';
-import { readdir } from 'fs';
+import { readdir, createReadStream } from 'fs';
 import { createInterface } from 'readline';
 import { homedir } from 'os';
 import { join, dirname, parse } from 'path';
@@ -40,10 +40,14 @@ rl.on('line', (data) => {
     if (data === 'up') {
       returnDirectory(currentDirectory);
     }
+
+    if (data.startsWith('cat')) {
+      readFile(data.split(' ')[1]);
+    }
   }
 
   if (data.startsWith('cd')) {
-    openDirectory(data.slice(3));
+    openDirectory(data.split(' ')[1]);
   }
 
   stdout.write(`You are currently in ${currentDirectory}\n\n`);
@@ -69,7 +73,22 @@ const readDirectory = (path) => {
 };
 
 const returnDirectory = (path) => {
-  currentDirectory = path === parse(homePath).root ? path : dirname(path);
+  if (path === parse(homePath).root) {
+    currentDirectory = path;
+    stdout.write('Operation failed\n');
+  } else {
+    currentDirectory = dirname(path);
+  }
 };
+
+const readFile = (path) => {
+  currentDirectory = path;
+
+  console.log(currentDirectory);
+
+  const readStream = createReadStream(currentDirectory);
+
+  readStream.on('data', (data) => stdout.write(data.toString));
+}
 
 rl.on('SIGINT', closeConsole);
